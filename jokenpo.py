@@ -1,4 +1,5 @@
 import json
+import random
 
 def lambda_handler(event, context):
     try:
@@ -7,33 +8,35 @@ def lambda_handler(event, context):
 
         # Obtém os dados do corpo da requisição
         body = json.loads(event['body'])
-        jogador1 = body['jogador1'].capitalize()
-        jogador2 = body['jogador2'].capitalize()
+        jogador = body['jogador'].capitalize()
     except (KeyError, TypeError, json.JSONDecodeError) as e:
         # Log do erro
         print(f"Erro ao processar o corpo da requisição: {str(e)}")
         return {
             'statusCode': 400,
-            'body': json.dumps('Erro: Parâmetros inválidos. Certifique-se de enviar um JSON com as chaves "jogador1" e "jogador2".')
+            'body': json.dumps('Erro: Parâmetros inválidos. Certifique-se de enviar um JSON com a chave "jogador".')
         }
 
-    # Converte as entradas para maiúsculas para validação e comparação
-    jogador1 = jogador1.capitalize()
-    jogador2 = jogador2.capitalize()
-
-    # Valida as entradas dos jogadores
+    # Valida a entrada do jogador
     opcoes_validas = ["Pedra", "Papel", "Tesoura"]
-    if jogador1 not in opcoes_validas or jogador2 not in opcoes_validas:
+    if jogador not in opcoes_validas:
         return {
             'statusCode': 400,
             'body': json.dumps('Erro: Entrada inválida! Certifique-se de escolher entre Pedra, Papel ou Tesoura.')
         }
 
+    # Gera a escolha da máquina
+    escolha_maquina = random.choice(opcoes_validas)
+
     # Determina o vencedor
-    resultado = determinar_vencedor(jogador1, jogador2)
+    resultado = determinar_vencedor(jogador, escolha_maquina)
     return {
         'statusCode': 200,
-        'body': json.dumps(f'Resultado: {resultado}')
+        'body': json.dumps({
+            'jogador': jogador,
+            'maquina': escolha_maquina,
+            'resultado': resultado
+        })
     }
 
 def determinar_vencedor(jogador1, jogador2):
